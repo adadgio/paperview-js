@@ -10,7 +10,7 @@
   "scripts": {
     "start": "npm run watch",
     "watch": "bash build.sh && webpack --config webpack.dev.js",
-    "build": "bash build.sh && webpack --config webpack.prod.js",
+    "build": "bash build.sh && webpack --config webpack.prod.js"
   },
   "author": "Romain BRUCKERT",
   "license": "ISC",
