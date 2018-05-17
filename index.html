@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Adadgio Box Content Preview</title>
+    <title>paperview-js</title>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
 
-    <script src="./pdfviewer.bundle.js"></script>
+    <script src="./paperview.min.js"></script>
     <style type="text/css">
+        /* custom style on your website */
         body { margin: 0; padding: 0 }
         #viewer { width:100%; height:100% }
     </style>
@@ -20,9 +21,9 @@
         var options = {
             url: './assets/example1/assets',
         }
-        
-        console.log(PDFViewer, CrocodocPDFViewer) // these are the same objects
-        var viewer = new PDFViewer()
+
+        // create and display a document
+        var viewer = new PaperView()
         viewer.createViewer('#viewer', options)
         viewer.load()
     </script>

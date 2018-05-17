@@ -6,13 +6,18 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
     entry: {
-        main: './src/main.ts',
+        main: './src/index.ts',
     },
     output: {
         path: path.join(__dirname, 'dist'),
         filename: 'paperview.min.js',
+        // library: 'PaperView',
+        libraryTarget: 'umd'
     },
     resolve: {
+        // alias: {
+        //     'paperview': path.resolve(__dirname, 'dist'),
+        // },
         // Add '.ts' and '.tsx' as a resolvable extension.
         extensions: ['.webpack.js', '.web.js', '.ts', 'tsx', '.js', '.scss']
     },
@@ -37,12 +42,7 @@ module.exports = {
     // new webpack.optimize.CommonsChunkPlugin({
     //     name: 'common' // Specify the common bundle's name.
     // }),
-    //new webpack.IgnorePlugin(/^\.\/pdf.worker.js$/),
     new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 }),
-    new ExtractTextPlugin('style.css'),
-    // new CleanWebpackPlugin(['dist']),
-    // new HtmlWebpackPlugin({
-    //   title: 'Production'
-    // })
+    // new ExtractTextPlugin('style.scss'),
   ]
 }

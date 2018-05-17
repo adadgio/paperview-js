@@ -1,3 +1,4 @@
+import './scss/style.scss';
 import { px, scale }    from './utility/scale';
 import { support }      from './utility/support';
 import { fetchURL }     from './utility/fetch';
@@ -5,7 +6,7 @@ import { fetchSVG }     from './utility/fetch-svg';
 import { embedSVG }     from './utility/embed-svg';
 import { embedText }    from './utility/embed-text';
 
-export class Viewer
+export class PaperView
 {
     options: any = {}
     container: HTMLElement;
@@ -49,7 +50,7 @@ export class Viewer
         // temp debug
         const debugElement = document.createElement('div')
         debugElement.setAttribute('class', 'debug')
-        debugElement.innerText = `Adadgio Viewer JS v${this.VERSION}`;
+        debugElement.innerText = `paperview-js v${this.VERSION}`;
         this.container.appendChild(debugElement)
 
         this.VIEWPORT_DIM.width = this.viewport.offsetWidth
