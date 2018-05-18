@@ -2,10 +2,10 @@
 
 ## Purpose and usage
 
-The javascript client for **paperview** which allows to view any transformed document in any browser (or mobi browser). A ideal
+The javascript client for [paperview-server](https://github.com/adadgio/paperview-server) which allows to view any transformed document in any browser (or mobi browser). A ideal
 replacement solution for the legacy *Crocodoc* and *Box View API* clients.
 
-This library is able to display converted assets (see also paperview-server) as well as legacy Crocodoc or Box View legacy (svg/html) assets.
+This library is able to display converted assets (see also **paperview-server**) as well as legacy Crocodoc or Box View legacy (svg/html) assets.
 
 ## Viewer containers, width, height and scale
 
