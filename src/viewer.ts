@@ -25,7 +25,7 @@ export class PaperView
     SCROLL_PREVIOUS = 'previous';
     SCROLL_NEXT = 'next';
     ZOOM_FIT_WIDTH = 'fitwidth';
-    VERSION: string = '1.0.2';
+    VERSION: string = '1.0.3';
 
     constructor()
     {
