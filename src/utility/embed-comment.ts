@@ -30,9 +30,6 @@ export function embedComment(page: HTMLElement, comment: JsonEntry, newViewportH
     // let paddingX = parseInt(computedStyles.paddingLeft) + parseInt(compStyles.paddingRight)
     // let paddingY = parseInt(computedStyles.paddingTop) + parseInt(compStyles.paddingBottom)
 
-
-
-    // let toPageTop =
     // let topRelToPageTop = comment.top + element.offsetHeight + paddingYFix;
 
     // scale the comment top position from stored values considering (règle de trois...)
