@@ -37,8 +37,7 @@ export function embedComment(page: HTMLElement, comment: JsonEntry, newViewportH
 
     // scale the comment top position from stored values considering (règle de trois...)
     let scaledTopPos = (newViewportHeight * comment.top) / comment.viewportDimension.height
-    let paddingTopFix = parseInt(computedStyles.paddingBottom) + element.offsetHeight
-
+    let paddingTopFix = scaledTopPos + element.offsetHeight
     
     console.log(comment.viewportDimension.height, comment.top, newViewportHeight)
     // correct the position given the element padding and height
@@ -46,6 +45,6 @@ export function embedComment(page: HTMLElement, comment: JsonEntry, newViewportH
 
     // console.log(this.getPageOffset(comment.numPage) + comment.yStart)
     // height and width only exist when the element exists in the DOM
-    element.style.top = `${paddingTopFix}px` //  - (element.offsetHeight + paddingX)
+    element.style.top = `${comment.top}px` //  - (element.offsetHeight + paddingX)
     element.style.left = `${comment.left}px`
 }

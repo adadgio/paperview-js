@@ -154,11 +154,11 @@ export class PaperView
         let comments: Array<any> = [
             {
                 text: "without (or without you)",
-                top: 217,
+                top: 220.44630432128906,
                 left: 192,
                 numPage: 1,
                 scrollPos: 1510,
-                viewportDimension: {width: 1102, height: 604}
+                viewportDimension: {width: 1102, height: 606}
             }
         ]
 
@@ -166,7 +166,7 @@ export class PaperView
             const comment = comments[i]
             const page: HTMLElement = this.pages[comment.numPage]
             embedComment(page, comment, this.VIEWPORT_DIM.height)
-            
+
             // console.log(element.offsetTop)
         }
     }
@@ -301,9 +301,9 @@ export class PaperView
             let oRange = selection.getRangeAt(0) //get the text range
             let oRect = oRange.getBoundingClientRect()
             let pageNum = this.getCurrentPageNum()
-
+            
             let fromTop = this.getPageTopDistFromTop(pageNum) - e.pageY
-
+            console.log(e.pageY)
             let commentEntry = {
                 pageNum: pageNum,
                 top: oRect.top, // fromTop, //oRect.top + this.getScrollPos(),
