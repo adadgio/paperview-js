@@ -1,0 +1,18 @@
+.crocodoc-doc {
+    .crocodoc-page-custom {
+        position: relative;
+
+        .comment {
+            color: #f5f5f5;
+            position: absolute;
+            width: auto;
+            background-color: #333;
+            padding: 8px;
+            font-size: 12px;
+            opacity: 0.9;
+
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    }
+}

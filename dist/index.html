@@ -8,6 +8,7 @@
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
 
     <script src="./paperview.min.js"></script>
+    <script src="./assets/lightrange.min.js"></script>
     <style type="text/css">
         body { margin: 0; padding: 0 }
         #viewer { width:100%; height:100% }
@@ -24,6 +25,18 @@
         // create and display a document
         var viewer = new PaperView()
         viewer.createViewer('#viewer', options)
+        viewer.on('ready', (e) => {
+            console.log(e)
+            // viewer.scrollTo('1808px')
+            // viewer.scrollTo(1800)
+            viewer.scrollToPage(2)
+
+        }).on('scroll', (e) => {
+            // console.log(e.scrollTop)
+
+        }).on('textselected', (e) => {
+            console.log(e)
+        })
         viewer.load()
     </script>
 </body>
