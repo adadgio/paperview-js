@@ -17,12 +17,20 @@
     position: relative;
     text-align: center;
     font-size: 100%;
+    background-color: #f3f3f3;
+
+    // @TODO Add gray background as an option
+    &.crocodoc-doc-background-gray {
+        background-color: #f3f3f3;
+    }
 }
 
 .crocodoc-page-custom {
     position: relative;
     background-color: #fff;
     border-bottom: 1px solid red;
+    margin-left: auto;
+    margin-right:  auto;
 }
 
 .crocodoc-page-svg-custom,
@@ -57,4 +65,24 @@
     color: #5a5a5a;
     font-family: Arial, sans-serif;
     font-size: 12px;
+}
+
+.line1 {
+    position: absolute;
+    background: red;
+    width: 1px;
+    top: 0px;
+    left: 203px;
+    height: 251px;
+    z-index: 99;
+}
+
+.line2 {
+    position: absolute;
+    background: green;
+    width: 1px;
+    top: 0px;
+    left: 203px + 5px;
+    height: 251px;
+    z-index: 100;
 }

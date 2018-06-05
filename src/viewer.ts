@@ -1,45 +1,43 @@
 declare var lightrange: any;
 import './scss/viewer.scss';
+import './scss/toolbar.scss';
 import './scss/comment.scss';
-import { px, scale }    from './utility/scale';
-import { support }      from './utility/support';
-import { fetchURL }     from './utility/fetch';
-import { fetchSVG }     from './utility/fetch-svg';
-import { fetchTEXT }    from './utility/fetch-text';
-import { embedSVG }     from './utility/embed-svg';
-import { embedText }    from './utility/embed-text';
-import { embedComment } from './utility/embed-comment';
+import './scss/animations.scss';
+
+import { px, scale }        from './utility/scale';
+import { support }          from './utility/support';
+import { both }             from './utility/both';
+import { fetchURL }         from './utility/fetch';
+import { fetchSVG }         from './utility/fetch-svg';
+import { fetchTEXT }        from './utility/fetch-text';
+import { embedSVG }         from './utility/embed-svg';
+import { embedText }        from './utility/embed-text';
+import { embedComment }     from './utility/embed-comment';
+import { embedToolbar }     from './utility/embed-toolbar';
+import { commentEditor }    from './utility/comment-editor';
+import { JsonComment }      from './utility/comment-json.type';
+import { Mouse }            from './utility/mouse';
 
 export class PaperView
 {
     options: any = {};
-    mouse: any = { x: null, y: null }
     loaded: boolean = false;
-
-    pages: Array<HTMLElement> = []
 
     container: HTMLElement;     // usually #viewer
     viewport: HTMLElement;      // usually .crocodoc-viewport
     doc: HTMLElement;           // usually .crocodoc.doc
+    pages: Array<HTMLElement> = []
 
-    VIEWPORT_DIM: any = {
-        width: 0,
-        height: 0,
-    }
-    DOC_DIM: any = {
-        width: 0,
-        height: 0,
-    }
     PAGES_DIMS: Array<any> = []
+    DOC_DIM: any = { width: 0, height: 0 }
+    VIEWPORT_DIM: any = { width: 0, height: 0 }
 
-    listeners: any = {
-        ready: () => {}
-    }
-
-    SCROLL_PREVIOUS = 'previous';
-    SCROLL_NEXT = 'next';
-    ZOOM_FIT_WIDTH = 'fitwidth';
     VERSION: string = '1.0.3';
+    SCROLL_NEXT: string = 'next';
+    SCROLL_PREVIOUS: string = 'previous';
+    ZOOM_FIT_WIDTH: string = 'fitwidth';
+
+    listeners: any = { ready: () => {} }
 
     constructor()
     {
@@ -51,6 +49,8 @@ export class PaperView
         this.options = opts;
         this.options.url = opts.url.replace(/\/$/, '')
         this.container = document.getElementById(selector.replace('#', ''))
+
+        this.options.comments = (typeof opts.comments !== 'undefined') ? both(opts.comments, { view: true, edit: true }) : { view: true, edit: true }
 
         this.viewport = document.createElement('div')
         this.doc = document.createElement('div')
@@ -142,8 +142,18 @@ export class PaperView
                     }
                 }
 
-                this.enabledTextSelectionListener()
-                this.loadComments()
+                if (true === this.options.comments.view) {
+                    this.loadComments()
+                }
+                if (true === this.options.comments.edit) {
+                    this.enableComments()
+                }
+
+                // display toolbar when document is loaded
+                embedToolbar(this)
+                
+                // @TODO To remove
+                // this.placeMarkers()
 
             }).catch(error => { console.log(error) })
         })
@@ -151,24 +161,13 @@ export class PaperView
 
     loadComments()
     {
-        let comments: Array<any> = [
-            {
-                text: "without (or without you)",
-                top: 220.44630432128906,
-                left: 192,
-                numPage: 1,
-                scrollPos: 1510,
-                viewportDimension: {width: 1102, height: 606}
+        fetchURL(`${this.options.url}/comments.json`, 'json').then((comments: Array<JsonComment>) => {
+            for (let i in comments) {
+                const comment = comments[i]
+                const page: HTMLElement = this.pages[comment.numPage]
+                embedComment(page, comment, this.VIEWPORT_DIM.width)
             }
-        ]
-
-        for (let i in comments) {
-            const comment = comments[i]
-            const page: HTMLElement = this.pages[comment.numPage]
-            embedComment(page, comment, this.VIEWPORT_DIM.height)
-
-            // console.log(element.offsetTop)
-        }
+        })
     }
 
     getDocHeight()
@@ -234,9 +233,10 @@ export class PaperView
 
         if (null !== pixels) {
             this.scrollTo(pixels)
+        } else {
+            console.warn(`::scrollToPage() Cannot scroll because this page number does not exist)`)
         }
 
-        console.warn(`::scrollToPage( failed, this page number does not exist)`)
         return this
     }
 
@@ -289,49 +289,58 @@ export class PaperView
         return null;
     }
 
-    private enabledTextSelectionListener()
+    // @TODO Method to remove
+    private placeMarkers()
     {
-        document.onmousemove = (e) => {
-            this.mouse = { x: e.pageX, y: e.pageY }
-        }
+        let line1 = document.createElement('div')
+        line1.setAttribute('class', 'line1')
+        document.body.appendChild(line1)
 
-        this.viewport.onmouseup = (e) => {
-            let selection = window.getSelection()
+        let line2 = document.createElement('div')
+        line2.setAttribute('class', 'line2')
+        this.pages[1].appendChild(line2)
+    }
 
-            let oRange = selection.getRangeAt(0) //get the text range
-            let oRect = oRange.getBoundingClientRect()
-            let pageNum = this.getCurrentPageNum()
-            
-            let fromTop = this.getPageTopDistFromTop(pageNum) - e.pageY
-            console.log(e.pageY)
-            let commentEntry = {
-                pageNum: pageNum,
-                top: oRect.top, // fromTop, //oRect.top + this.getScrollPos(),
-                left: oRect.left,
-                text: selection.toString(),
+    private enableComments()
+    {
+        commentEditor().onSave((comment: JsonComment) => {
+            console.log(comment, JSON.stringify(comment))
+        })
+
+        Mouse.enable().up((e, coords) => {
+
+            commentEditor().hide()
+
+            let selection = lightrange.getSelectionInfo()
+
+            // let selection = window.getSelection()
+            // let oRange = selection.getRangeAt(0) // get text range
+            // let oRect = oRange.getBoundingClientRect()
+            // let pageNum = this.getCurrentPageNum()
+            //
+            // let jsonComment: JsonComment = {
+            //     pageNum: pageNum,
+            //     top: oRect.top,
+            //     left: oRect.left,
+            //     text: selection.toString(),
+            //     scrollPos: this.getScrollPos(),
+            //     viewportDimension: this.VIEWPORT_DIM,
+            // }
+
+            if (selection.characters === 0) {
+                return;
+            }
+
+            let jsonComment: JsonComment = {
+                pageNum: this.getCurrentPageNum(),
+                top: selection.yStart,
+                left: selection.xStart,
+                text: selection.text,
                 scrollPos: this.getScrollPos(),
                 viewportDimension: this.VIEWPORT_DIM,
             }
 
-            console.log(JSON.stringify(commentEntry))
-            // const selectionInfo = lightrange.getSelectionInfo()
-            //
-            // if (selectionInfo.characters > 0 && typeof this.listeners['textselected'] === 'function') {
-            //     const event = { eventName: 'textselected', scrollTop: this.getScrollPos(), selection: selectionInfo }
-            //
-            //     let jsonTextInfo = {
-            //         text: selectionInfo.text,
-            //         xStart: selectionInfo.xStart,
-            //         yStart: selectionInfo.yStart,
-            //         xEnd: selectionInfo.xEnd,
-            //         yEnd: selectionInfo.yEnd,
-            //     }
-            //     // console.log(jsonTextInfo)
-            //     // console.log(selectionInfo.yStart, this.VIEWPORT_DIM.height)
-            //
-            //     this.listeners['textselected'](event)
-            //     // console.log()
-            // }
-        }
+            commentEditor().show(jsonComment, coords)
+        })
     }
 }

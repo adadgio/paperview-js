@@ -20,13 +20,15 @@
     <script type="text/javascript">
         var options = {
             url: './assets/example1/assets',
+            comments: true,
+            // comments: { view: true, edit: true } // this also works
         }
 
         // create and display a document
         var viewer = new PaperView()
         viewer.createViewer('#viewer', options)
         viewer.on('ready', (e) => {
-            console.log(e)
+
             // viewer.scrollTo('1808px')
             // viewer.scrollTo(1800)
             viewer.scrollToPage(2)

@@ -1,19 +1,97 @@
+$fontSize: 14px;
+
 .crocodoc-doc {
     .crocodoc-page-custom {
         position: relative;
 
-        .comment {
+        .crocodoc-comment {
             color: #f5f5f5;
             position: absolute;
             width: auto;
             background-color: #333;
             padding: 8px;
-            font-size: 13px;
-            opacity: 0.9;
+            font-size: $fontSize;
             font-family: Arial, sans-serif;
+            
+            opacity: 0.9;
 
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+
+            &.visible {
+                display: block;
+            }
+            &.hidden {
+                display: none;
+            }
+        }
+    }
+}
+
+.crocodoc-comment-editor {
+    position: fixed;
+    color: #333;
+
+    border: 1px solid #e0e0e0;
+    box-shadow: 0px 0px 8px #e4e4e4;
+    background-color: #fff;
+
+    font-size: $fontSize;
+    font-family: Arial, sans-serif;
+
+    z-index: 99;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+
+    .crocodoc-comment-editor-inner {
+        display: flex;
+        flex-direction: column;
+        padding: 16px 24px;
+
+        label {
+            color: gray;
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            color: inherit;
+            font-size: inherit;
+            font-family: inherit;
+
+            padding: 8px;
+            background: #fbfbfb;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 8px;
+
+            &:focus {
+                outline: none;
+            }
+        }
+
+        button {
+            cursor: pointer;
+            color: #fff;
+            font-size: inherit;
+            font-family: inherit;
+
+            border: none;
+            padding: 8px;
+            background-color: #2663c1;
+
+            border-radius: 2px;
+            -moz-border-radius: 2px;
+            -webkit-border-radius: 2px;
+
+            outline: none;
+            animation: background-color 0.3s ease;
+
+            &:hover {
+                background-color: #3574d6;
+            }
         }
     }
 }
