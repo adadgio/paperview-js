@@ -4,7 +4,7 @@ export function fetchSVG(url: string, handler: Function = () => {}): Promise<SVG
 {
     return new Promise((resolve, reject) => {
         let xhr = support.getXHR()
-        
+
         xhr.responseType = 'document';
         xhr.overrideMimeType('image/svg+xml')
         xhr.open('GET', url, true)

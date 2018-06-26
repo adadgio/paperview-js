@@ -1,13 +1,12 @@
 import { browser }              from './browser';
 import { template }             from './template';
-import { CommentJson }          from './comment-json.type';
+import { Comment }              from '../model';
 import { Mouse, MouseCoords }   from './mouse';
 
+let onSaved: Function = () => {}
 const EDITOR_ID = 'crocodoc-comment-editor'
 
-let onSaved: Function = () => {}
-
-function show(comment: CommentJson, coords?: MouseCoords)
+function show(comment: Comment, coords?: MouseCoords)
 {
     let editor = document.createElement('div')
     editor.setAttribute('id', EDITOR_ID)
@@ -38,7 +37,6 @@ function show(comment: CommentJson, coords?: MouseCoords)
     let textarea = document.getElementsByName('crodocodoc_comment_text')[0] as HTMLTextAreaElement
 
     // textarea.onfocus = (e) => {
-    //     console.log(e)
     //     e.preventDefault()
     // }
 

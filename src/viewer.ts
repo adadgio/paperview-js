@@ -6,17 +6,20 @@ import './scss/animations.scss';
 
 import { px, scale }        from './utility/scale';
 import { support }          from './utility/support';
+import { width, height }    from './utility/support';
+import { getComputedStyle } from './utility/support';
 import { both }             from './utility/both';
 import { fetchURL }         from './utility/fetch';
 import { fetchSVG }         from './utility/fetch-svg';
+import { fetchPNG }         from './utility/fetch-png';
 import { fetchTEXT }        from './utility/fetch-text';
-import { embedSVG }         from './utility/embed-svg';
 import { embedText }        from './utility/embed-text';
-import { embedComment }     from './utility/embed-comment';
 import { embedToolbar }     from './utility/embed-toolbar';
+import { updateToolbar }    from './utility/embed-toolbar';
 import { commentEditor }    from './utility/comment-editor';
-import { JsonComment }      from './utility/comment-json.type';
 import { Mouse }            from './utility/mouse';
+
+import { Page, Comment  }   from './model';
 
 export class PaperView
 {
@@ -26,13 +29,14 @@ export class PaperView
     container: HTMLElement;     // usually #viewer
     viewport: HTMLElement;      // usually .crocodoc-viewport
     doc: HTMLElement;           // usually .crocodoc.doc
-    pages: Array<HTMLElement> = []
+    pages: Array<Page> = []
+    comments: Array<Comment> = []
 
-    PAGES_DIMS: Array<any> = []
     DOC_DIM: any = { width: 0, height: 0 }
     VIEWPORT_DIM: any = { width: 0, height: 0 }
+    VIEWPORT_DIM_FORCED: boolean = false
 
-    VERSION: string = '1.0.3';
+    VERSION: string = '1.0.5';
     SCROLL_NEXT: string = 'next';
     SCROLL_PREVIOUS: string = 'previous';
     ZOOM_FIT_WIDTH: string = 'fitwidth';
@@ -44,17 +48,30 @@ export class PaperView
 
     }
 
+    // helper to fix Android window height/width on mobile browsers
+    // https://stackoverflow.com/questions/10610743/android-browsers-screen-width-screen-height-window-innerwidth-window-inner
+    forceViewerSize(width: number, height: number)
+    {
+        this.VIEWPORT_DIM_FORCED = true
+        this.VIEWPORT_DIM.width = width
+        this.VIEWPORT_DIM.height = height
+
+        return this
+    }
+
     createViewer(selector: string, opts?: any)
     {
         this.options = opts;
         this.options.url = opts.url.replace(/\/$/, '')
         this.container = document.getElementById(selector.replace('#', ''))
 
+        this.options.mode = (typeof opts.mode !== 'undefined') ? opts.mode : 'svg';
         this.options.comments = (typeof opts.comments !== 'undefined') ? both(opts.comments, { view: true, edit: true }) : { view: true, edit: true }
 
         this.viewport = document.createElement('div')
         this.doc = document.createElement('div')
 
+        this.viewport.setAttribute('id', 'crocodoc-viewport')
         this.viewport.setAttribute('class', 'crocodoc-viewport')
         this.doc.setAttribute('class', 'crocodoc-doc')
 
@@ -67,32 +84,36 @@ export class PaperView
         debugElement.innerHTML = `paperview-js v${this.VERSION} <span id="scroll-pos"></span>`;
         this.container.appendChild(debugElement)
 
-        this.VIEWPORT_DIM.width = this.viewport.offsetWidth
-        this.VIEWPORT_DIM.height = this.viewport.offsetHeight
+        if (!this.VIEWPORT_DIM_FORCED) {
+            this.VIEWPORT_DIM.width = this.viewport.offsetWidth
+            this.VIEWPORT_DIM.height = this.viewport.offsetHeight
+        }
 
         return this;
     }
 
     load(): void
     {
-        this.pages = []
-        let pagesLoaded: Array<Promise<SVGSVGElement>> = []
+        let imgsFetched: Array<Promise<SVGSVGElement|string>> = []
         let textsLoaded: Array<Promise<any>> = []
-        // let promises: Array<Promise<any>> = []
 
         fetchURL(`${this.options.url}/info.json`, 'json').then(info => {
+
             let scaling = scale(this.VIEWPORT_DIM, info.dimensions)
 
             // create requests for each pages (svg + text elements)
             for (var i = 0; i < info.numpages; i++) {
-                // create pages containers
-                let page: HTMLElement = document.createElement('div')
+                this.pages.push(new Page(info.dimensions, scaling))
 
-                page.setAttribute('class', 'crocodoc-page-custom')
-                page.setAttribute('style', `width:${px(info.dimensions.width, scaling)};height:${px(info.dimensions.height, scaling)}`)
-                this.pages.push(page)
+                if (this.options.mode === 'svg') {
+                    imgsFetched.push(fetchSVG(`${this.options.url}/page-${i+1}.svg`))
+                }  else if (this.options.mode === 'canvas' || this.options.mode === 'png') {
 
-                pagesLoaded.push(fetchSVG(`${this.options.url}/page-${i+1}.svg`))
+                    let url = `${this.options.url}/page-${i+1}.png`
+                    imgsFetched.push(Promise.resolve(url))
+                }
+
+
                 // @TODO uncomment to load dirty text layer
                 // textsLoaded.push(fetchTEXT(`${this.options.url}/text-${i+1}.html`))
             }
@@ -108,19 +129,16 @@ export class PaperView
             //     }
             // })
 
-            Promise.all(pagesLoaded).then(res => {
+            Promise.all(imgsFetched).then((imgDocs: Array<SVGSVGElement|string>) => {
 
                 for (var i=0; i < info.numpages; i++) {
-                    const svgDoc: SVGSVGElement = res[i]
-                    const page: HTMLElement = this.pages[i]
-
-                    this.doc.appendChild(page)
-                    embedSVG(page, svgDoc)
-                    this.PAGES_DIMS[i] = { width: (page.offsetWidth), height: page.offsetHeight, offsetTop: ((i+1) * page.offsetHeight) - page.offsetHeight }
+                    const page = this.pages[i]
+                    page.render(imgDocs[i], i, this.options.mode).appendTo(this.doc)
                 }
 
-                // set sizes (height in particular) when all pages are loaded
                 this.loaded = true
+
+                // set sizes only when all pages are loaded
                 this.DOC_DIM.width = this.getDocWidth()
                 this.DOC_DIM.height = this.getDocHeight()
 
@@ -139,6 +157,9 @@ export class PaperView
                         document.getElementById('scroll-pos').innerText = `${scrollPos}`
                         const event = { eventName: 'scroll', scrollTop: scrollPos, numPages: this.pages.length, currentPage: currPageNum }
                         this.listeners['scroll'](event)
+
+                        // show current page and other info in toolbar
+                        updateToolbar(currPageNum)
                     }
                 }
 
@@ -148,12 +169,9 @@ export class PaperView
                 if (true === this.options.comments.edit) {
                     this.enableComments()
                 }
-
-                // display toolbar when document is loaded
-                embedToolbar(this)
                 
-                // @TODO To remove
-                // this.placeMarkers()
+                // display the toolbar when document is loaded
+                // embedToolbar(this)
 
             }).catch(error => { console.log(error) })
         })
@@ -161,13 +179,19 @@ export class PaperView
 
     loadComments()
     {
-        fetchURL(`${this.options.url}/comments.json`, 'json').then((comments: Array<JsonComment>) => {
-            for (let i in comments) {
-                const comment = comments[i]
-                const page: HTMLElement = this.pages[comment.numPage]
-                embedComment(page, comment, this.VIEWPORT_DIM.width)
-            }
+        fetchURL(`${this.options.url}/comments.json`, 'json').then((comments: Array<Comment>) => {
+            comments = (null === comments) ? [] : comments
+            this.comments = comments.map(data => new Comment(data))
+            this.renderComments()
         })
+    }
+
+    renderComments()
+    {
+        for (let i in this.comments) {
+            const page = this.pages[this.comments[i].pageNum]
+            this.comments[i].render().appendTo(page, this.VIEWPORT_DIM.width)
+        }
     }
 
     getDocHeight()
@@ -195,24 +219,23 @@ export class PaperView
 
     getPageOffset(pageNum: number)
     {
-        return this.PAGES_DIMS[pageNum - 1].offsetTop
+        return this.pages[pageNum - 1].offsetTop(pageNum)
     }
 
     getCurrentPageNum()
     {
         const scrollPos = this.getScrollPos()
+
         // page num would be the page currently at 2/3 of viewport
         const scrollPosFixed = scrollPos + (this.VIEWPORT_DIM.height * 0.666)
 
-        let pageHeightTotal = 0,
-            pageNum = 0;
+        let pageNum = 0;
+        let pagesTotalHeight = 0;
 
-        for (let i in this.PAGES_DIMS) {
+        for (let i in this.pages) {
+            pagesTotalHeight += this.pages[i].height
 
-            let pageInfo = this.PAGES_DIMS[i]
-            pageHeightTotal += pageInfo.height
-
-            if (scrollPosFixed >= pageHeightTotal) {
+            if (scrollPosFixed >= pagesTotalHeight) {
                 pageNum++;
             }
         }
@@ -243,6 +266,7 @@ export class PaperView
     scrollTop()
     {
         this.viewport.scrollTop = 0
+
         return this
     }
 
@@ -256,7 +280,8 @@ export class PaperView
     on(eventName: string, callback: Function)
     {
         this.listeners[eventName] = callback
-        return this;
+
+        return this
     }
 
     addPlugin(name: string): void
@@ -264,47 +289,47 @@ export class PaperView
 
     }
 
-    // private guessHeight(element: HTMLElement)
-    // {
-    //     let test = element.cloneNode(true)
-    //     element.style.visibility = 'hidden'
-    //     document.body.appendChild(element)
-    //
-    // }
-
-    private getPageTopDistFromTop(number: number)
+    private getPageDistFromTop(number: number)
     {
         let pixels: number = 0;
+        let scrollTop = this.viewport.scrollTop;
 
-        for (let i in this.PAGES_DIMS) {
-            let index = parseInt(i) + 1
 
-            if (index === number) {
-                return pixels;
-            }
+        for (let i in this.pages) {
+            let index = parseInt(i)
 
-            pixels += this.PAGES_DIMS[i].height;
+            let pageHeight = this.pages[i].height;
+            // pixels +=
+            // @TODO
+            // if ((index === number)) {
+            //
+            // }
         }
 
         return null;
     }
 
-    // @TODO Method to remove
-    private placeMarkers()
+    private getPageTopDistFromTop(number: number)
     {
-        let line1 = document.createElement('div')
-        line1.setAttribute('class', 'line1')
-        document.body.appendChild(line1)
+        let pixels: number = 0;
 
-        let line2 = document.createElement('div')
-        line2.setAttribute('class', 'line2')
-        this.pages[1].appendChild(line2)
+        for (let i in this.pages) {
+
+            if ((parseInt(i) + 1) === number) {
+                return pixels;
+            }
+
+            pixels += this.pages[i].height;
+        }
+
+        return pixels;
     }
 
     private enableComments()
     {
-        commentEditor().onSave((comment: JsonComment) => {
-            console.log(comment, JSON.stringify(comment))
+        commentEditor().onSave((comment: Comment) => {
+            this.comments.push(comment)
+            this.renderComments()
         })
 
         Mouse.enable().up((e, coords) => {
@@ -312,6 +337,10 @@ export class PaperView
             commentEditor().hide()
 
             let selection = lightrange.getSelectionInfo()
+
+            let currPageNum = this.getCurrentPageNum()
+            // let pageTopDist = this.getPageDistFromTop(currPageNum)
+            // let topFromPage = selection.yStart + pageTopDist
 
             // let selection = window.getSelection()
             // let oRange = selection.getRangeAt(0) // get text range
@@ -330,17 +359,18 @@ export class PaperView
             if (selection.characters === 0) {
                 return;
             }
+            // let realPageSelected = e.target;
 
-            let jsonComment: JsonComment = {
-                pageNum: this.getCurrentPageNum(),
-                top: selection.yStart,
-                left: selection.xStart,
-                text: selection.text,
-                scrollPos: this.getScrollPos(),
-                viewportDimension: this.VIEWPORT_DIM,
-            }
+            // let comment: Comment = new Comment({
+            //     pageNum: currPageNum,
+            //     top: topFromPage,
+            //     left: selection.xStart,
+            //     text: selection.text,
+            //     scrollPos: this.getScrollPos(),
+            //     viewportDimension: this.VIEWPORT_DIM,
+            // })
 
-            commentEditor().show(jsonComment, coords)
+            // commentEditor().show(comment, coords)
         })
     }
 }

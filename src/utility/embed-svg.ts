@@ -15,7 +15,7 @@ export function embedSVG(page: HTMLElement, svgDoc: SVGSVGElement)
     svgDoc.setAttribute('width', `100%`)
     svgDoc.setAttribute('height', `100%`)
     // svgDoc.setAttribute('viewBox', `0 0 ${page.offsetWidth} ${page.offsetHeight}`)
-
+    
     pageSvg.appendChild(svgDoc)
     page.appendChild(pageSvg)
 }
