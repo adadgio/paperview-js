@@ -15,14 +15,14 @@ export function embedCANVAS(page: HTMLElement, imgUrl: string)
     image.onload = () => {
 
         let scaleFactor = 1.8
-        canvas.width = page.offsetWidth / scaleFactor
-        canvas.height = page.offsetHeight / scaleFactor
+        canvas.width = page.offsetWidth // / scaleFactor
+        canvas.height = page.offsetHeight // / scaleFactor
 
         // let w = page.offsetWidth * scaleFactor
         // let h = page.offsetHeight * scaleFactor
-        
+
         let ctx = canvas.getContext('2d')
-        ctx.drawImage(image, 0, 0, canvas.width , canvas.height) //
+        ctx.drawImage(image, 0, 0, canvas.width , canvas.height)
 
         pageCanvas.appendChild(canvas)
     }

@@ -20,11 +20,13 @@ import { commentEditor }    from './utility/comment-editor';
 import { Mouse }            from './utility/mouse';
 
 import { Page, Comment  }   from './model';
+import { safariFix }        from './safari.fix';
 
 export class PaperView
 {
     options: any = {};
     loaded: boolean = false;
+    safariFix: Function;
 
     container: HTMLElement;     // usually #viewer
     viewport: HTMLElement;      // usually .crocodoc-viewport
@@ -45,7 +47,7 @@ export class PaperView
 
     constructor()
     {
-
+        this.safariFix = safariFix
     }
 
     // helper to fix Android window height/width on mobile browsers
@@ -169,7 +171,7 @@ export class PaperView
                 if (true === this.options.comments.edit) {
                     this.enableComments()
                 }
-                
+
                 // display the toolbar when document is loaded
                 // embedToolbar(this)
 
