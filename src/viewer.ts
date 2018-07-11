@@ -69,6 +69,9 @@ export class PaperView
 
         this.options.mode = (typeof opts.mode !== 'undefined') ? opts.mode : 'svg';
         this.options.comments = (typeof opts.comments !== 'undefined') ? both(opts.comments, { view: true, edit: true }) : { view: true, edit: true }
+        this.options.svgFetchMode = (typeof opts.svgFetchMode === 'undefined') ? 'response/document' : opts.svgFetchMode;
+        this.options.toolbar = (typeof opts.toolbar === 'undefined') ? false : opts.toolbar;
+        this.options.debug = (typeof opts.debug === 'undefined') ? false : opts.debug;
 
         this.viewport = document.createElement('div')
         this.doc = document.createElement('div')
@@ -81,10 +84,12 @@ export class PaperView
         this.viewport.appendChild(this.doc)
 
         // temp debug
-        const debugElement = document.createElement('div')
-        debugElement.setAttribute('class', 'debug')
-        debugElement.innerHTML = `paperview-js v${this.VERSION} <span id="scroll-pos"></span>`;
-        this.container.appendChild(debugElement)
+        if (true === this.options.debug) {
+            const debugElement = document.createElement('div')
+            debugElement.setAttribute('class', 'debug')
+            debugElement.innerHTML = `paperview-js v${this.VERSION} <span id="scroll-pos"></span>`;
+            this.container.appendChild(debugElement)
+        }
 
         if (!this.VIEWPORT_DIM_FORCED) {
             this.VIEWPORT_DIM.width = this.viewport.offsetWidth
@@ -108,13 +113,12 @@ export class PaperView
                 this.pages.push(new Page(info.dimensions, scaling))
 
                 if (this.options.mode === 'svg') {
-                    imgsFetched.push(fetchSVG(`${this.options.url}/page-${i+1}.svg`))
+                    imgsFetched.push(fetchSVG(`${this.options.url}/page-${i+1}.svg`, this.options.svgFetchMode))
                 }  else if (this.options.mode === 'canvas' || this.options.mode === 'png') {
 
                     let url = `${this.options.url}/page-${i+1}.png`
                     imgsFetched.push(Promise.resolve(url))
                 }
-
 
                 // @TODO uncomment to load dirty text layer
                 // textsLoaded.push(fetchTEXT(`${this.options.url}/text-${i+1}.html`))
@@ -156,12 +160,15 @@ export class PaperView
                         const scrollPos = this.getScrollPos()
                         const currPageNum = this.getCurrentPageNum()
 
-                        document.getElementById('scroll-pos').innerText = `${scrollPos}`
+                        // show current page and other info in toolbar
+                        if (this.options.toolbar) {
+
+                            document.getElementById('scroll-pos').innerText = `${scrollPos}`
+                            updateToolbar(currPageNum)
+                        }
+
                         const event = { eventName: 'scroll', scrollTop: scrollPos, numPages: this.pages.length, currentPage: currPageNum }
                         this.listeners['scroll'](event)
-
-                        // show current page and other info in toolbar
-                        updateToolbar(currPageNum)
                     }
                 }
 
@@ -171,9 +178,10 @@ export class PaperView
                 if (true === this.options.comments.edit) {
                     this.enableComments()
                 }
-
-                // display the toolbar when document is loaded
-                // embedToolbar(this)
+                // display the bottom toolbar when document is loaded
+                if (true === this.options.toolbar) {
+                    embedToolbar(this)
+                }
 
             }).catch(error => { console.log(error) })
         })

@@ -26,6 +26,10 @@ export function safariFix()
         const svgElement = svgs[i]
         const attr = svgElement.getAttribute('x')
 
+        if (null == attr) {
+            return;
+        }
+
         let xAttrs = attr.split(' ').map(val => { return (val == '') ? null : parseFloat(val.trim()) })
         // attrs = attrs.filter(val => { return val != '' })
 
@@ -33,7 +37,6 @@ export function safariFix()
             continue;
         }
 
-        // console.log(xAttrs)
         let list = []
 
         for (let i in xAttrs) {
@@ -47,6 +50,5 @@ export function safariFix()
             xAttrs[i+1] = nextValue
             list.push(value)
         }
-        
     }
 }

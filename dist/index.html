@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8"/>
     <title>paperview-js</title>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
 
@@ -20,9 +21,10 @@
 
     <script type="text/javascript">
         var options = {
-            url: './assets/example3/assets',
+            url: './assets/example5bis/assets',
             comments: false,
             mode: 'svg', // 'svg'|'canvas'
+            svgFetchMode: 'document',
             // comments: { view: true, edit: true } // this also works
         }
 
@@ -35,9 +37,9 @@
             // viewer.scrollTo(1800)
             // viewer.scrollToPage(2)
             viewer.safariFix()
-            
-        }).on('scroll', (e) => {
 
+        }).on('scroll', (e) => {
+            
             // console.log(e.scrollTop)
             // console.log(viewer.getCurrentPageNum())
         })
