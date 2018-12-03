@@ -2,6 +2,22 @@ declare var window: any;
 declare var ActiveXObject: any;
 let xhrSupported = null, xhrCORSSupported = null;
 
+export let getComputedStyle = (el) => {
+    if ('getComputedStyle' in window) {
+        return window.getComputedStyle(el);
+    }
+    // IE <= 8
+    return el.currentStyle;
+}
+
+
+export let height = () => {
+    Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+}
+export let width = () => {
+    Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+}
+
 export let support: any = {
     /**
      * Return true if XHR is supported

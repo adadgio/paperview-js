@@ -24,7 +24,10 @@ export function fetchURL(url: string, type: string = 'text', handler: Function =
                     status = 200;
                 }
 
-                if (status === 200) {
+                if (status < 500) {
+                    if (status !== 200)  {
+                        console.warn(`fetchURL() Resolved to ${status}`)
+                    }
                     resolve(xhr.response)
                 } else {
                     reject(xhr)

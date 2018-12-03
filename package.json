@@ -1,6 +1,6 @@
 {
   "name": "paperview-js",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "View any document on browser on mobile (javascript client for paperview)",
   "main": "./dist/index.js",
   "repository": {
