@@ -64,12 +64,22 @@
 }
 
 .crocodoc-page-svg-custom,
-.crocodoc-page-text-customn
+.crocodoc-page-text-custom,
+.crocodoc-page-img-custom,
 .crocodoc-page-canvas-custom
  {
     width: 100%;
     height: 100%;
     position: absolute;
+}
+
+.crocodoc-page-img-custom {
+    img {
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        max-width: 100%;
+    }
 }
 
 .crocodoc-page-text-custom {
