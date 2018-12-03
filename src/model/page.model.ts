@@ -1,6 +1,7 @@
 import { calc }         from '../utility/scale';
 import { embedSVG }     from '../utility/embed-svg';
 import { embedCANVAS }  from '../utility/embed-canvas';
+import { embedIMAGE }   from '../utility/embed-image';
 import { Size }         from './size.interface';
 
 export class Page
@@ -12,6 +13,7 @@ export class Page
     public width: number;
     public height: number;
     public nativeElement: HTMLElement;
+    public loader: HTMLElement;
 
     constructor(size: Size, scale: number = 1)
     {
@@ -39,12 +41,24 @@ export class Page
 
         this.nativeElement.setAttribute('style', `width: ${this.width}px; height:${this.height}px`)
 
+        this.loader = document.createElement('div')
+        this.loader.setAttribute('class', 'page-loading-gif visible')
+        this.nativeElement.appendChild(this.loader)
+
         if (rendering === 'canvas') {
             embedCANVAS(this.nativeElement, imgDoc)
         } else if (rendering === 'svg') {
             embedSVG(this.nativeElement, imgDoc)
+        }  else if (rendering === 'png') {
+            embedIMAGE(this.nativeElement, imgDoc)
         }
 
+        return this
+    }
+
+    hideLoader()
+    {
+        this.loader.style.display = 'none'
         return this
     }
 

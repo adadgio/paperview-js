@@ -72,6 +72,7 @@ export class PaperView
         this.options.svgFetchMode = (typeof opts.svgFetchMode === 'undefined') ? 'response/document' : opts.svgFetchMode;
         this.options.toolbar = (typeof opts.toolbar === 'undefined') ? false : opts.toolbar;
         this.options.debug = (typeof opts.debug === 'undefined') ? false : opts.debug;
+        this.options.onError = (typeof opts.onError === 'undefined') ? (()=>{}) : opts.onError;
 
         this.viewport = document.createElement('div')
         this.doc = document.createElement('div')
@@ -101,7 +102,7 @@ export class PaperView
 
     load(): void
     {
-        let imgsFetched: Array<Promise<SVGSVGElement|string>> = []
+        let imgsFetched: Array<Promise<SVGSVGElement|string|any>> = []
         let textsLoaded: Array<Promise<any>> = []
 
         fetchURL(`${this.options.url}/info.json`, 'json').then(info => {
@@ -113,8 +114,16 @@ export class PaperView
                 this.pages.push(new Page(info.dimensions, scaling))
 
                 if (this.options.mode === 'svg') {
+
                     imgsFetched.push(fetchSVG(`${this.options.url}/page-${i+1}.svg`, this.options.svgFetchMode))
-                }  else if (this.options.mode === 'canvas' || this.options.mode === 'png') {
+
+                }  else if (this.options.mode === 'canvas') {
+
+                    console.warn('Canvas mode is not yet supported')
+                    let url = `${this.options.url}/page-${i+1}.png`
+                    imgsFetched.push(Promise.resolve(url))
+
+                } else if (this.options.mode === 'png') {
 
                     let url = `${this.options.url}/page-${i+1}.png`
                     imgsFetched.push(Promise.resolve(url))
@@ -140,6 +149,7 @@ export class PaperView
                 for (var i=0; i < info.numpages; i++) {
                     const page = this.pages[i]
                     page.render(imgDocs[i], i, this.options.mode).appendTo(this.doc)
+                    page.hideLoader()
                 }
 
                 this.loaded = true
@@ -162,8 +172,12 @@ export class PaperView
 
                         // show current page and other info in toolbar
                         if (this.options.toolbar) {
+                            // for debug onlyy!
+                            let debugScrollPosElement = document.getElementById('debug-scroll-pos')
+                            if (debugScrollPosElement) {
+                                debugScrollPosElement.innerText = `${scrollPos}`
+                            }
 
-                            document.getElementById('scroll-pos').innerText = `${scrollPos}`
                             updateToolbar(currPageNum)
                         }
 
@@ -183,7 +197,12 @@ export class PaperView
                     embedToolbar(this)
                 }
 
-            }).catch(error => { console.log(error) })
+            }).catch(error => {
+                this.options.onError(error)
+            })
+
+        }).catch(error => {
+            this.options.onError(error)
         })
     }
 
@@ -239,7 +258,7 @@ export class PaperView
         // page num would be the page currently at 2/3 of viewport
         const scrollPosFixed = scrollPos + (this.VIEWPORT_DIM.height * 0.666)
 
-        let pageNum = 0;
+        let pageNum = 1;
         let pagesTotalHeight = 0;
 
         for (let i in this.pages) {
@@ -343,7 +362,6 @@ export class PaperView
         })
 
         Mouse.enable().up((e, coords) => {
-
             commentEditor().hide()
 
             let selection = lightrange.getSelectionInfo()

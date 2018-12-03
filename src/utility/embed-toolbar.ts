@@ -7,6 +7,18 @@ const DEFAULT_ZOOM: number = 1.0;
 let ZOOM: number = 1.0;
 let ORIGINAL_SIZE: SizeTuple;
 
+export function gotoNextPage(viewer: any)
+{
+    let pageNum = viewer.getCurrentPageNum()
+    viewer.scrollToPage(pageNum + 1)
+}
+
+export function gotoPreviousPage(viewer: any)
+{
+    let pageNum = viewer.getCurrentPageNum()
+    viewer.scrollToPage(pageNum - 1)
+}
+
 export function zoomSize(tuple: SizeTuple, scale: number): SizeTuple
 {
     return { width: (tuple.width * scale), height: tuple.height * scale }
@@ -15,7 +27,6 @@ export function zoomSize(tuple: SizeTuple, scale: number): SizeTuple
 export function zoomInOrOut(viewer: any, zoomCoef: number)
 {
     // ZOOM = Math.round(ZOOM * zoomCoef)
-
     // let originalSize = viewer.getDocHeight()
     if (zoomCoef === 1) {
         // @TODO Not finding satisfiying solution to rever to default zoom
@@ -23,7 +34,6 @@ export function zoomInOrOut(viewer: any, zoomCoef: number)
     }
 
     for (let i in viewer.pages) {
-
         let width = parseInt(viewer.pages[i].width) * zoomCoef
         let height = parseInt(viewer.pages[i].height) * zoomCoef
 
@@ -47,7 +57,7 @@ export function zoomInOrOut(viewer: any, zoomCoef: number)
 export function updateToolbar(currentPage: number)
 {
     let element: any = document.getElementById('crocodoc-toolbar-pages')
-    
+
     if (element) {
         element.innerText = `${currentPage}`
     }
@@ -59,7 +69,7 @@ export function embedToolbar(viewer: any)
     element.setAttribute('class', 'crocodoc-toolbar')
 
     if (element == null)  {
-        return;
+        return
     }
 
     element.innerHTML = `<div class="crocodoc-toolbar">
@@ -67,18 +77,36 @@ export function embedToolbar(viewer: any)
             <a class="crocodoc-toolbar-element" href="" id="crodococ-btn-zoom-in">In</a>
             <a class="crocodoc-toolbar-element" href="" id="crodococ-btn-zoom-out">Out</a>
             <a class="crocodoc-toolbar-element" href="" id="crodococ-btn-zoom-fit">Fit</a>
-            <span id="crocodoc-toolbar-pages" class="crocodoc-toolbar-element crocodoc-toolbar-pages"></span>
+            <a class="crocodoc-toolbar-element icon-next" href="" id="crodococ-btn-prev">&laquo;</a>
+            <span id="crocodoc-toolbar-pages" class="crocodoc-toolbar-element crocodoc-toolbar-pages">1/12</span>
+            <a class="crocodoc-toolbar-element" href="" id="crodococ-btn-next">&raquo;</a>
+            <!-- <span id="debug-scroll-pos"></span> -->
         </div>
-    </div>`;
+    </div>`
 
     document.body.appendChild(element)
 
     let zoomInBtn = document.getElementById('crodococ-btn-zoom-in')
     let zoomOutBtn = document.getElementById('crodococ-btn-zoom-out')
     let zoomFitBtn = document.getElementById('crodococ-btn-zoom-fit')
+    let pagesNums = document.getElementById('crocodoc-toolbar-pages')
 
+    let gotoNext = document.getElementById('crodococ-btn-next')
+    let gotoPrev = document.getElementById('crodococ-btn-prev')
     // ORIGINAL_SIZE.width = parseInt(viewer.pages[0].style.width)
     // ORIGINAL_SIZE.height = parseInt(viewer.pages[0].style.height)
+
+    gotoNext.addEventListener('click', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        gotoNextPage(viewer)
+    })
+
+    gotoPrev.addEventListener('click', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        gotoPreviousPage(viewer)
+    })
 
     zoomInBtn.onclick = (e) => {
         e.preventDefault()

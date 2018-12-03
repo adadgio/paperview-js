@@ -1,10 +1,15 @@
 .DS_Store
 /node_modules/
 
+/assets/example1/
 /assets/example2/
 /assets/example3/
 /assets/example4/
+/assets/example5/
+/assets/example6/
+/assets/example7/
+/assets/example8/
+/assets/example9/
+/assets/example10/
 
-/dist/assets/example2/
-/dist/assets/example3/
-/dist/assets/example4/
+/dist/assets/*
