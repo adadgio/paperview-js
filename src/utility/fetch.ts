@@ -1,4 +1,4 @@
-import { support } from './support';
+import { support } from './support'
 
 export function fetchURL(url: string, type: string = 'text', handler: Function = () => {}): Promise<any>
 {
@@ -10,7 +10,7 @@ export function fetchURL(url: string, type: string = 'text', handler: Function =
 
         xhr.onreadystatechange = function () {
             if (xhr.readyState == 4) {
-                let status = xhr.status;
+                let status = xhr.status
 
                 // remove the onreadystatechange handler,
                 // because it could be called again
@@ -36,7 +36,7 @@ export function fetchURL(url: string, type: string = 'text', handler: Function =
         }
 
         // this needs to be after the open call and before the send call
-        xhr.withCredentials = true;
+        xhr.withCredentials = false
         xhr.send()
     })
 }
