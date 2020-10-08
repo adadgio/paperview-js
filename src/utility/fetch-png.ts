@@ -66,7 +66,7 @@ export function fetchPNG(url: string, handler: Function = () => {}): Promise<str
         }
 
         // this needs to be after the open call and before the send call
-        xhr.withCredentials = true;
+        xhr.withCredentials = false;
         xhr.send()
     })
 }

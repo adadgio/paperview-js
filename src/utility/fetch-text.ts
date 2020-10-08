@@ -38,9 +38,9 @@ export function fetchTEXT(url: string, handler: Function = () => {}): Promise<HT
                 }
             }
         }
-
+        
         // this needs to be after the open call and before the send call
-        xhr.withCredentials = true;
+        xhr.withCredentials = false;
         xhr.send()
     })
 }
